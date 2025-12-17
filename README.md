@@ -41,7 +41,7 @@ python3 create_venvs.py --target <development | production>
      - `{ENV_NAME}-WebServer`
 
 Airflow should be up and running now. You can access the web server on your localhost on port 8080.
-Dart reporsitory should be in same directory as amazon-mwaa-docker-images
+The dart repository should be located alongside the amazon-mwaa-docker-images directory.
 ### Authentication from version 3.0.1 onward
 For environments created using this repository starting with version 3.0.1, we default to using `SimpleAuthManager`, 
 which is also the default auth manager in Airflow 3.0.0+. By default, `SIMPLE_AUTH_MANAGER_ALL_ADMINS` is set to true, 
