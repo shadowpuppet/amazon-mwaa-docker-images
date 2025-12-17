@@ -61,9 +61,14 @@ export FERNET_KEY
 # Build the Docker image
 ./build.sh $CONTAINER_RUNTIME
 
-# ENV_NAME="local"
+ACCOUNT_ID="" # Put your account ID here.
+# ENV_NAME="" # Choose an environment name here.
+REGION="us-west-2" # Keeping the region us-west-2 as default.
 
 # AWS Credentials
+AWS_ACCESS_KEY_ID="test" # Put your credentials here.
+AWS_SECRET_ACCESS_KEY="test" # Put your credentials here.
+AWS_SESSION_TOKEN="test" # Put your credentials here.
 eval "$(aws configure export-credentials --format env)"
 
 # BOM Generation
