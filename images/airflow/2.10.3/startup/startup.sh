@@ -22,4 +22,4 @@ else
   echo "Warning: Connections file not found at ${CONNECTIONS_FILE}. Skipping import."
 fi
 
-airflow dags pause --treat-dag
+airflow dags pause --treat-dag-id-as-regex '.*' -y
