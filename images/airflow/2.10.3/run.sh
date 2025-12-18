@@ -122,42 +122,6 @@ export MWAA__LOGGING__AIRFLOW_WORKER_LOG_LEVEL
 export MWAA__CORE__TASK_MONITORING_ENABLED
 export MWAA__CORE__TERMINATE_IF_IDLE
 export MWAA__CORE__MWAA_SIGNAL_HANDLING_ENABLED
-# Function to create CloudWatch log group if it doesn't exist
-# create_log_group_if_not_exists() {
-#     local component=$1
-#     local log_enabled=$2
-
-#     if [ -z "$ENV_NAME" ]; then
-#         echo "Not creating log group for $component as ENV_NAME is not set."
-#         return
-#     fi
-
-#     if [ "$log_enabled" != "true" ]; then
-#         echo "Skipping log group creation as logging is not enabled for $component."
-#         return
-#     fi
-
-#     local log_group_name="${ENV_NAME}-${component}"
-#     echo "Verifying existence of log group: '$log_group_name' in region '$REGION'..."
-
-#     if aws logs describe-log-groups --log-group-name-prefix "$log_group_name" --region "$REGION" | grep -q "$log_group_name"; then
-#         echo "Log group '$log_group_name' already exists in region '$REGION'."
-#     else
-#         echo "Creating log group '$log_group_name' in region '$REGION'..."
-#         if aws logs create-log-group --log-group-name "$log_group_name" --region "$REGION"; then
-#             echo "Log group '$log_group_name' created successfully in region '$REGION'."
-#         else
-#             echo "Error creating log group '$log_group_name' in region '$REGION'."
-#         fi
-#     fi
-# }
-
-# # Create log groups for each component
-# create_log_group_if_not_exists "DAGProcessing" "$MWAA__LOGGING__AIRFLOW_DAGPROCESSOR_LOGS_ENABLED"
-# create_log_group_if_not_exists "Scheduler" "$MWAA__LOGGING__AIRFLOW_SCHEDULER_LOGS_ENABLED"
-# create_log_group_if_not_exists "Task" "$MWAA__LOGGING__AIRFLOW_TASK_LOGS_ENABLED"
-# create_log_group_if_not_exists "WebServer" "$MWAA__LOGGING__AIRFLOW_WEBSERVER_LOGS_ENABLED"
-# create_log_group_if_not_exists "Worker" "$MWAA__LOGGING__AIRFLOW_WORKER_LOGS_ENABLED"
 
 if [ "$COMMAND" == "test-requirements" ] || [ "$COMMAND" == "test-startup-script" ]; then
     $CONTAINER_RUNTIME compose -f docker-compose-test-commands.yaml up "$COMMAND" --abort-on-container-exit
