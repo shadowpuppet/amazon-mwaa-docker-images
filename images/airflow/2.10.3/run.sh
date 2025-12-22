@@ -57,7 +57,17 @@ fi
 # Read the Fernet key from cache
 FERNET_KEY=$(cat "${FERNET_KEY_FILE}")
 export FERNET_KEY
+BUILDARCH=$(uname -m)
+if [ "$BUILDARCH" = "x86_64" ]; then
+    BUILDARCH="amd64"
+elif [ "$BUILDARCH" = "aarch64" ]; then
+    BUILDARCH="arm64"
+fi
+export BUILDARCH
+echo "Detected build architecture: $BUILDARCH"
 
+# Create required directories for Docker volume mounts
+mkdir -p ./logs/airflow
 # Build the Docker image
 ./build.sh $CONTAINER_RUNTIME
 
