@@ -69,7 +69,7 @@ x-airflow-common: &airflow-common
     - ./requirements:/usr/local/airflow/requirements
     - ./startup:/usr/local/airflow/startup
     - ./logs/airflow:/usr/local/airflow/logs
-    - "${AIRFLOW_LOCAL_CONNECTIONS_DIR:-${PWD}/example_connections}:/usr/local/airflow/files"
+    - "${AIRFLOW_LOCAL_CONNECTIONS_DIR}:/usr/local/airflow/files"
   depends_on: &airflow-common-depends-on
     postgres:
       condition: service_healthy

@@ -27,7 +27,7 @@ python3 create_venvs.py --target <development | production>
 ```
 
 3. Build a supported Airflow version Docker image
-   - `cd <amazon-mwaa-docker-images path>/images/airflow/2.9.2`
+   - `cd <amazon-mwaa-docker-images path>/images/airflow/2.10.3`
    - Update `run.sh` file with your account ID, environment name and account credentials, api-server URL 
    - (`http://host_name:8080`). The permissions associated
    with the provided credentials will be assigned to the Airflow components that would be started with the next step. 
