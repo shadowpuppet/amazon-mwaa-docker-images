@@ -11,7 +11,7 @@ else
   echo "Skipping RDS proxy connection (CONNECT_TO_RDS_PROXY=${CONNECT_TO_RDS_PROXY:-false})."
 fi
 
-# --- ADD THIS SECTION TO IMPORT CONNECTIONS ---
+# --- IMPORT CONNECTIONS ---
 CONNECTIONS_FILE="/usr/local/airflow/files/connections.json"
 echo "Attempting to import connections from: ${CONNECTIONS_FILE}"
 if [ -f "${CONNECTIONS_FILE}" ]; then
@@ -20,4 +20,15 @@ if [ -f "${CONNECTIONS_FILE}" ]; then
   echo "Successfully imported connections."
 else
   echo "Warning: Connections file not found at ${CONNECTIONS_FILE}. Skipping import."
+fi
+
+# --- IMPORT VARIABLES ---
+VARIABLES_FILE="/usr/local/airflow/files/variables.json"
+echo "Attempting to import variables from: ${VARIABLES_FILE}"
+if [ -f "${VARIABLES_FILE}" ]; then
+  # The 'airflow variables import' command reads the JSON and inserts/updates variables in the DB
+  airflow variables import "${VARIABLES_FILE}"
+  echo "Successfully imported variables."
+else
+  echo "Warning: Variables file not found at ${VARIABLES_FILE}. Skipping import."
 fi
