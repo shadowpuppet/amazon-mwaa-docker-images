@@ -96,27 +96,6 @@ def _create_airflow_subprocess(
     )
 
 
-@with_db_lock(9999)
-async def pause_all_dags(environ: dict[str, str]):
-    """
-    Pause all DAGs to prevent unwanted backfills and task execution.
-
-    This is a safeguard to ensure that DAGs don't start running immediately when the
-    container starts. DAGs can be manually unpaused by users as needed.
-
-    :param environ: A dictionary containing the environment variables.
-    """
-    try:
-        logger.info("Pausing all DAGs as a safeguard against unwanted backfills.")
-        await run_command(
-            "airflow dags pause --treat-dag-id-as-regex '.*' -y",
-            env=environ,
-        )
-        logger.info("Successfully paused all DAGs.")
-    except Exception as error:
-        logger.warning(f"Failed to pause DAGs: {error}. Continuing with execution.")
-
-
 @cache
 def _is_sidecar_health_monitoring_enabled():
     enabled = (
@@ -270,7 +249,22 @@ def _run_airflow_command(cmd: str, environ: Dict[str, str]):
     :param environ: A dictionary containing the environment variables.
     """
     # Pause all DAGs before starting any Airflow component to prevent unwanted backfills
-    asyncio.run(pause_all_dags(environ))
+    logger.info("Pausing all DAGs as a safeguard against unwanted backfills.")
+    try:
+        import subprocess
+        result = subprocess.run(
+            "airflow dags pause --treat-dag-id-as-regex '.*' -y",
+            shell=True,
+            env=environ,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            logger.info("Successfully paused all DAGs.")
+        else:
+            logger.warning(f"Failed to pause DAGs: {result.stderr}. Continuing with execution.")
+    except Exception as error:
+        logger.warning(f"Failed to pause DAGs: {error}. Continuing with execution.")
 
     match cmd:
         case "scheduler":
