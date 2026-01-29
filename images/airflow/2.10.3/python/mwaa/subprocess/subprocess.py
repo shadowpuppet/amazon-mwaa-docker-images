@@ -325,6 +325,12 @@ class Subprocess:
 
         sigterm_patience_interval_secs = self.sigterm_patience_interval.total_seconds()
         try:
+            # Set the pipe back to blocking mode before calling communicate()
+            # as subprocess.communicate() does not support non-blocking pipes.
+            if process.stdout is not None:
+                fl = fcntl.fcntl(process.stdout, fcntl.F_GETFL)
+                fcntl.fcntl(process.stdout, fcntl.F_SETFL, fl & ~os.O_NONBLOCK)
+
             outs, _ = self.process.communicate(timeout=sigterm_patience_interval_secs)
             if outs:
                 self.process_logger.info(outs.decode("utf-8"))

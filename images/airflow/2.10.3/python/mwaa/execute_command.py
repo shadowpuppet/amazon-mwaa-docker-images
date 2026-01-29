@@ -248,6 +248,23 @@ def _run_airflow_command(cmd: str, environ: Dict[str, str]):
     :param cmd - The command to run, e.g. "worker".
     :param environ: A dictionary containing the environment variables.
     """
+    # Pause all DAGs before starting any Airflow component to prevent unwanted backfills
+    logger.info("Pausing all DAGs as a safeguard against unwanted backfills.")
+    try:
+        import subprocess
+        result = subprocess.run(
+            "airflow dags pause --treat-dag-id-as-regex '.*' -y",
+            shell=True,
+            env=environ,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            logger.info("Successfully paused all DAGs.")
+        else:
+            logger.warning(f"Failed to pause DAGs: {result.stderr}. Continuing with execution.")
+    except Exception as error:
+        logger.warning(f"Failed to pause DAGs: {error}. Continuing with execution.")
 
     match cmd:
         case "scheduler":
