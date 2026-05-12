@@ -5,15 +5,27 @@ set -e
 SOURCE_DAGS="../../../../dart/airflow/dags"
 TARGET_DAGS="./dags"
 
-echo "Checking for DAG folder at: $SOURCE_DAGS"
+# Sync dbt project files
+SOURCE_DBT="../../../../dart/dbt/core"
+TARGET_DBT="./dags/dbt/core"
 
+echo "Checking for DAG folder at: $SOURCE_DAGS"
 if [ -d "$SOURCE_DAGS" ]; then
     echo "Syncing DAGs from $SOURCE_DAGS → $TARGET_DAGS ..."
-    mkdir -p "$TARGET_DAGS"
-    cp -r "$SOURCE_DAGS"/* "$TARGET_DAGS"/
+    rsync -a --delete "$SOURCE_DAGS/" "$TARGET_DAGS/"
     echo "DAG sync completed."
 else
     echo "No DAG folder found at $SOURCE_DAGS — skipping DAG sync."
+fi
+
+echo "Checking for dbt project at: $SOURCE_DBT"
+if [ -d "$SOURCE_DBT" ]; then
+    echo "Syncing dbt project from $SOURCE_DBT → $TARGET_DBT ..."
+    mkdir -p "$TARGET_DBT"
+    rsync -a --delete "$SOURCE_DBT/" "$TARGET_DBT/"
+    echo "dbt sync completed."
+else
+    echo "No dbt project found at $SOURCE_DBT — skipping dbt sync."
 fi
 
 COMMAND=$1

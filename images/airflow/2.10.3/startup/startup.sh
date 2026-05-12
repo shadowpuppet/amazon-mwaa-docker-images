@@ -3,6 +3,31 @@
 export ENVIRONMENT_STAGE="local"
 echo "Airflow Environment is:" $ENVIRONMENT_STAGE
 
+# --- DBT VENV SETUP ---
+export DBT_VENV_PATH="/usr/local/airflow/dbt-venv"
+DBT_REQUIREMENTS="/usr/local/airflow/dags/dbt/core/requirements.txt"
+
+if [ ! -f "$DBT_VENV_PATH/bin/dbt" ]; then
+    echo "Creating dbt virtualenv at ${DBT_VENV_PATH}..."
+    python3 -m venv "${DBT_VENV_PATH}"
+
+    if [ -f "$DBT_REQUIREMENTS" ]; then
+        echo "Installing dbt from ${DBT_REQUIREMENTS}..."
+        "${DBT_VENV_PATH}/bin/pip" install --no-cache-dir -r "$DBT_REQUIREMENTS"
+        echo "Force-reinstalling protobuf==4.25.5 to match MWAA pinned version..."
+        "${DBT_VENV_PATH}/bin/pip" install --no-cache-dir --force-reinstall "protobuf==4.25.5"
+    else
+        echo "ERROR: dbt requirements file not found at ${DBT_REQUIREMENTS}" >&2
+        exit 1
+    fi
+else
+    echo "dbt virtualenv already exists. Skipping installation."
+fi
+
+echo "Verifying dbt installation..."
+"${DBT_VENV_PATH}/bin/dbt" --version
+echo "dbt setup complete."
+
 # --- IMPORT CONNECTIONS ---
 CONNECTIONS_FILE="/usr/local/airflow/files/connections.json"
 echo "Attempting to import connections from: ${CONNECTIONS_FILE}"
@@ -31,7 +56,7 @@ if [ "$CONNECT_TO_RDS_PROXY" = "true" ]; then
   if [ "$MWAA_AIRFLOW_COMPONENT" == "worker" ]; then
     set -x
     echo "Connecting to RDS proxy via SSH (Component: $MWAA_AIRFLOW_COMPONENT)..."
-    
+
     # Extract RDS_HOST and SSH_ADDRESS from variables.json if they are not set
     if [ -z "$RDS_HOST" ] || [ -z "$SSH_ADDRESS" ]; then
       if [ -f "${VARIABLES_FILE}" ]; then
