@@ -21,8 +21,14 @@ fi
 echo "Checking for dbt project at: $SOURCE_DBT"
 if [ -d "$SOURCE_DBT" ]; then
     echo "Generating dbt manifest in $SOURCE_DBT ..."
-    (cd "$SOURCE_DBT" && dbt parse && cp target/manifest.json manifest.json)
-    echo "dbt manifest generated."
+    DBT_BIN="$(pyenv root)/versions/dbt-venv/bin/dbt"
+    if [ ! -x "$DBT_BIN" ]; then
+        echo "WARNING: dbt not found at $DBT_BIN — skipping manifest generation. Non-worker containers may fail to parse DAGs." >&2
+        echo "Run: pyenv virtualenv 3.11.9 dbt-venv && pyenv activate dbt-venv && pip install -r dart/dbt/core/requirements.txt" >&2
+    else
+        (cd "$SOURCE_DBT" && "$DBT_BIN" parse && cp target/manifest.json manifest.json)
+        echo "dbt manifest generated."
+    fi
 
     echo "Syncing dbt project from $SOURCE_DBT → $TARGET_DBT ..."
     mkdir -p "$TARGET_DBT"
