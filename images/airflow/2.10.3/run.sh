@@ -26,7 +26,8 @@ if [ -d "$SOURCE_DBT" ]; then
         echo "WARNING: dbt not found at $DBT_BIN — skipping manifest generation. Non-worker containers may fail to parse DAGs." >&2
         echo "Run: pyenv virtualenv 3.11.9 dbt-venv && pyenv activate dbt-venv && pip install -r dart/dbt/core/requirements.txt" >&2
     else
-        (cd "$SOURCE_DBT" && "$DBT_BIN" parse --profiles-dir . && cp target/manifest.json manifest.json)
+        echo "Using dbt schema prefix: PARSE_ONLY"
+        (cd "$SOURCE_DBT" && SNOWFLAKE_DBT_SCHEMA_PREFIX=PARSE_ONLY "$DBT_BIN" parse --profiles-dir . && cp target/manifest.json manifest.json)
         echo "dbt manifest generated."
     fi
 
