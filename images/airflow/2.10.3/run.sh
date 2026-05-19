@@ -20,6 +20,10 @@ fi
 
 echo "Checking for dbt project at: $SOURCE_DBT"
 if [ -d "$SOURCE_DBT" ]; then
+    echo "Generating dbt manifest in $SOURCE_DBT ..."
+    (cd "$SOURCE_DBT" && dbt parse && cp target/manifest.json manifest.json)
+    echo "dbt manifest generated."
+
     echo "Syncing dbt project from $SOURCE_DBT → $TARGET_DBT ..."
     mkdir -p "$TARGET_DBT"
     rsync -a --delete "$SOURCE_DBT/" "$TARGET_DBT/"
