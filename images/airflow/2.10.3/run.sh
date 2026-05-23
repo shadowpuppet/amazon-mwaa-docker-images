@@ -78,6 +78,22 @@ REGION="us-west-2" # Keeping the region us-west-2 as default.
 # AWS Credentials
 if [ "$COMMAND" == "--CONNECT_TO_RDS_PROXY" ]; then
     eval "$(aws configure export-credentials --format env)"
+
+    # Extract the RDS hostname from variables.json and export it so docker-compose's
+    # extra_hosts can map it to 127.0.0.1 inside the worker container. This makes IAM
+    # auth tokens (AWS RDS GenerateDBAuthToken signs them against the connection's
+    # host) valid while traffic still flows through the SSH tunnel set up by
+    # startup.sh. Without this mapping, Postgres connections using IAM auth with
+    # host=localhost get rejected by RDS Proxy with "FATAL: The IAM authentication
+    # failed for the role".
+    VARIABLES_FILE="${AIRFLOW_LOCAL_CONNECTIONS_DIR:-./files}/variables.json"
+    if [ -f "$VARIABLES_FILE" ]; then
+        IAM_RDS_HOST=$(python3 -c "import json; print(json.load(open('$VARIABLES_FILE')).get('RDS_HOST', '').strip())" 2>/dev/null)
+        if [ -n "$IAM_RDS_HOST" ]; then
+            export IAM_RDS_HOST
+            echo "Extracted IAM_RDS_HOST from $VARIABLES_FILE (will be mapped to 127.0.0.1 in the worker container)."
+        fi
+    fi
 else
     export AWS_ACCESS_KEY_ID="test"
     export AWS_SECRET_ACCESS_KEY="test"

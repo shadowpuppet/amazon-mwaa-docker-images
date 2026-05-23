@@ -149,6 +149,13 @@ services:
     <<: *airflow-common
     command: worker
     container_name: mwaa-2103-worker
+    # When CONNECT_TO_RDS_PROXY mode is enabled, run.sh extracts the RDS hostname
+    # from variables.json into IAM_RDS_HOST. Mapping it to 127.0.0.1 here makes
+    # IAM auth tokens (signed for the real hostname) validate correctly while
+    # connections still flow through startup.sh's SSH tunnel on localhost:5432.
+    # Default placeholder keeps the spec valid when the var is unset.
+    extra_hosts:
+      - "${IAM_RDS_HOST:-iam-rds-host-unset.invalid}:127.0.0.1"
     depends_on:
       migratedb:
         condition: service_completed_successfully
