@@ -1,0 +1,4 @@
+# Runtime artifacts synced by run.sh — not source files
+dags/
+dbt-venv/
+logs/

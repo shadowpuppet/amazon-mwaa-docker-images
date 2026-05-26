@@ -11,3 +11,4 @@ sshtunnel==0.4.0
 psycopg2-binary==2.9.10
 boto3==1.35.36
 airflow-provider-hightouch==4.0.0
+astronomer-cosmos==1.7.1

@@ -5,15 +5,38 @@ set -e
 SOURCE_DAGS="../../../../dart/airflow/dags"
 TARGET_DAGS="./dags"
 
-echo "Checking for DAG folder at: $SOURCE_DAGS"
+# Sync dbt project files
+SOURCE_DBT="../../../../dart/dbt/core"
+TARGET_DBT="./dags/dbt/core"
 
+echo "Checking for DAG folder at: $SOURCE_DAGS"
 if [ -d "$SOURCE_DAGS" ]; then
     echo "Syncing DAGs from $SOURCE_DAGS → $TARGET_DAGS ..."
-    mkdir -p "$TARGET_DAGS"
-    cp -r "$SOURCE_DAGS"/* "$TARGET_DAGS"/
+    rsync -a --delete "$SOURCE_DAGS/" "$TARGET_DAGS/"
     echo "DAG sync completed."
 else
     echo "No DAG folder found at $SOURCE_DAGS — skipping DAG sync."
+fi
+
+echo "Checking for dbt project at: $SOURCE_DBT"
+if [ -d "$SOURCE_DBT" ]; then
+    echo "Generating dbt manifest in $SOURCE_DBT ..."
+    DBT_BIN="$(pyenv root)/versions/dbt-venv/bin/dbt"
+    if [ ! -x "$DBT_BIN" ]; then
+        echo "WARNING: dbt not found at $DBT_BIN — skipping manifest generation. Non-worker containers may fail to parse DAGs." >&2
+        echo "Run: pyenv virtualenv 3.11.9 dbt-venv && pyenv activate dbt-venv && pip install -r dart/dbt/core/requirements.txt" >&2
+    else
+        echo "Using dbt schema prefix: PARSE_ONLY"
+        (cd "$SOURCE_DBT" && SNOWFLAKE_DBT_SCHEMA_PREFIX=PARSE_ONLY "$DBT_BIN" parse --profiles-dir . && cp target/manifest.json manifest.json)
+        echo "dbt manifest generated."
+    fi
+
+    echo "Syncing dbt project from $SOURCE_DBT → $TARGET_DBT ..."
+    mkdir -p "$TARGET_DBT"
+    rsync -a --delete "$SOURCE_DBT/" "$TARGET_DBT/"
+    echo "dbt sync completed."
+else
+    echo "No dbt project found at $SOURCE_DBT — skipping dbt sync."
 fi
 
 COMMAND=$1
