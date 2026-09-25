@@ -21,9 +21,15 @@ fi
 echo "Checking for dbt project at: $SOURCE_DBT"
 if [ -d "$SOURCE_DBT" ]; then
     echo "Generating dbt manifest in $SOURCE_DBT ..."
-    DBT_BIN="$(pyenv root)/versions/dbt-venv/bin/dbt"
-    if [ ! -x "$DBT_BIN" ]; then
-        echo "WARNING: dbt not found at $DBT_BIN — skipping manifest generation. Non-worker containers may fail to parse DAGs." >&2
+    DBT_BIN=""
+    if command -v pyenv &> /dev/null; then
+        DBT_BIN="$(pyenv root)/versions/dbt-venv/bin/dbt"
+    elif command -v dbt &> /dev/null; then
+        DBT_BIN="$(command -v dbt)"
+    fi
+
+    if [ -z "$DBT_BIN" ] || [ ! -x "$DBT_BIN" ]; then
+        echo "WARNING: dbt not found — skipping manifest generation. Non-worker containers may fail to parse DAGs." >&2
         echo "Run: pyenv virtualenv 3.11.9 dbt-venv && pyenv activate dbt-venv && pip install -r dart/dbt/core/requirements.txt" >&2
     else
         echo "Using dbt schema prefix: PARSE_ONLY"
